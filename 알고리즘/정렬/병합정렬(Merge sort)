@@ -1,0 +1,100 @@
+▶︎ 정의 : 병합 정렬은 분할 정복의 대표적인 예로, n개의 데이터를 가진 배열을 오름 차순으로 정렬하기 위해
+        병합 정렬 사용 시, 아래와 같은 3단계 과정을 거치게 된다.
+
+▶︎ 과정
+1. Dicide(분할) : n개의 원소를 갖는 배열을 n/2 개의 원소를 갖는 작은 배열 2개로 나눈다.
+2. Conquer(정복) : 각 작은 배열을 정렬한다.
+3. Combine(병합) : 정렬된 작은 배열들을 병합한다.
+
+▶︎ 분할 정복(divide and conquer)
+  → 정의 : 문제를 작은 문제로 분리하고 각각을 해결한 다음, 결과를 모아서 원래의 문제를 해겨라는 전략이다.
+
+▶︎ 특징
+1. 병합 정렬은 분할한 작은 배열을 위한 저장 공간이 따로 필요하기 때문에 n개의 원소를 n/2 개씩 나누어 벼합 정렬의 공간 복잡도는 O(n) 이다.
+2. 병합 정렬은 중복된 키 값의 순서가 정렬 후에도 유지되기에 stable 정렬이다.
+3. 분할한 작은 배열을 위한 저장 공간이 따로 필요하기 때문에 not in-place 정렬이다.
+4. 시간 복잡도는 O(nlogn) 이다.
+
+
+▶︎ 구현 코드
+class Sort {
+    public void ascMergeSort(int[] arr) {
+        ascSort(arr, 0, arr.length);
+    }
+
+    public void descMergeSort(int[] arr) {
+        descSort(arr, 0, arr.length);
+    }
+
+    private static void ascSort(int[] arr, int low, int high) {
+        if (high - low < 2) {
+            return;
+        }
+
+        int mid = (low + high) / 2;
+        ascSort(arr, 0, mid);
+        ascSort(arr, mid, high);
+        ascMerge(arr, low, mid, high);
+    }
+
+    private static void descSort(int[] arr, int low, int high) {
+        if (high - low < 2) {
+            return;
+        }
+
+        int mid = (low + high) / 2;
+        descSort(arr, 0, mid);
+        descSort(arr, mid, high);
+        descMerge(arr, low, mid, high);
+    }
+
+    private static void ascMerge(int[] arr, int low, int mid, int high) {
+        int[] temp = new int[high - low];
+        int t = 0, l = low, h = mid;
+
+        while (l < mid && h < high) {
+            if (arr[l] > arr[h]) {
+                temp[t++] = arr[l++];
+            } else {
+                temp[t++] = arr[h++];
+            }
+        }
+
+        while (l < mid) {
+            temp[t++] = arr[l++];
+        }
+
+        while (h < high) {
+            temp[t++] = arr[h++];
+        }
+
+        for (int i = low; i < high; i++) {
+            arr[i] = temp[i - low];
+        }
+    }
+
+    private static void descMerge(int[] arr, int low, int mid, int high) {
+        int[] temp = new int[high - low];
+        int t = 0, l = low, h = mid;
+
+        while (l < mid && h < high) {
+            if (arr[l] < arr[h]) {
+                temp[t++] = arr[l++];
+            } else {
+                temp[t++] = arr[h++];
+            }
+        }
+
+        while (l < mid) {
+            temp[t++] = arr[l++];
+        }
+
+        while (h < high) {
+            temp[t++] = arr[h++];
+        }
+
+        for (int i = low; i < high; i++) {
+            arr[i] = temp[i - low];
+        }
+    }
+}
