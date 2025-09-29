@@ -1,0 +1,62 @@
+▶ OVER() 함수란?
+▶ 정의 : OVER 함수는 ORDER BY, GROUP BY 서브쿼리를 개선하기 위해 나온 함수라고 할 수 있다.
+  → SQL의 윈도우 함수와 짝을 이루는 강력한 기능으로 CTE나 LATERAL이 쿼리의 구조를 바꾼다면, OVER()는 데이터 분석의 차원을 바꾼다.
+  → 윈도우 함수는 원래의 행은 그대로 유지하면서 각 행마다 집계된 값을 추가로 보여준다.
+
+  → 그럼 이걸 왜 쓸까? 가장 큰 이유는 전체와 부분을 동시에 보고 싶을 때 사용된다.
+    예를 들어, 직원 테이블에서 각 직원이 급여와 함께, 그 직원이 속한 부서의 평균 급여를 같이 보고 싶다면?
+
+    기존 방식 : 1) 부셔별 평균 급여를 GROUP BY로 계산하고, 2) 이 결과를 원래 직원 테이블과 다시 조인해야 한다. (코드 복잡)
+
+    OVER() 사용 : 윈도우 함수와 OVER()를 쓰면, 조인 없이 쿼리 한 줄로 각 직원 행마다 자기가 속한 부서의 평균 급여를 바로 옆에 붙일 수 있다.
+
+▶ OVER() 절의 세 가지 핵심 요소
+  1. PARTITION BY (창문을 여러 개로 나누기)
+    역할 : 전체 데이터를 특정 컬럼 기준으로 그룹으로 나누는 역할을 한다. GROUP BY와 아주 비슷하지만 행을 합치지는 않는다.
+    예시 : OVER (PARTITION BY department)라고 쓰면, 개발팀 그룹, 기획팀 그룹처럼 부서별로 창문을 따로따로 만든다.
+    사용 예 : AVG(salary) OVER (PARTITION BY department) → 각 직원의 행에 자기가 속한 부서의 평균 급여를 계산해서 보여준다.
+
+  2. ORDER BY (창문 안에서 줄 세우기)
+    역할 : 나눠진 각 그룹안에서 데이터의 순서를 정해준다. 순위나 순서가 중요한 함수를 쓸 때 반드시 필요하다.
+    예시 : OVER (PARTITION BY department ORDER BY salary DESC) → 각 부서 안에서 직원들을 급여가 높은 순서대로 줄을 세운다.
+    사용 예 : RANK() OVER (PARTITION BY department ORDER BY salary DESC) → 각 부서별로 급여 순위를 매겨서 보여준다. (1등, 2등 ...)
+
+  3. ROWS / RANGE (보이는 범위를 더 좁히기)
+    역할 : 파티션 안에서 현재 행을 기준으로 계산에 포함할 범위를 더 세밀하게 지정한다. 
+          '현재 행부터 이전 2개 행까지', '처음부터 현재 행까지' 같은 식이다.
+    예시 : OVER (ORDER BY sale_date ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) 
+           → 날짜 순으로 정렬했을 때, 첫 번째 행부터 현재 행까지의 범위를 지정한다.
+    사용 예 : SUM(sales) OVER (ORDER BY sale_date ...) → 날짜별 누적 판매액을 계산할 수 있다.
+
+예시)
+  → 부셔벌 급여 순위 매기기
+    employees 테이블을 아래 그려본다.
+
+name      department      salary
+--------------------------------
+김개발    개발팀            5000
+박기획    기획팀            4800
+이개발    개발팀            6000
+최기획    기획팀            5800
+
+ → 여기서 각 부서 내 급여 순위를 매기고 싶다면?
+
+SELECT
+    name,
+    department,
+    salary,
+    RANK() OVER (
+        PARTITION BY department
+        ORDER BY salary DESC
+    ) AS dept_rank
+FROM
+    employees;
+
+▷ 결과
+name      department      salary      dept_rank
+-----------------------------------------------
+이개발    개발팀            6000        1
+김개발    개발팀            5000        2
+
+최기획    기획팀            5800        1
+박기획    기획팀            4800        2
