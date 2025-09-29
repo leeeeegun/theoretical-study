@@ -1,0 +1,38 @@
+▶︎ 왼쪽 외부 조인 (Left Outer Join)
+▶︎ 정의 : 왼쪽 테이블의 데이터는 모두 보여주고 오른쪽 테이블은 왼쪽과 짝이 맞는 데이터만 붙여서 보여준다. 이때, 짝이 없으면 오른쪽 컬럼은 Null로 표시된다.
+  → Left Join = Left Outer Join
+    왼쪽 테이블을 기준으로 일치하는 행만 결합되고, 일치하지 않는 부분은 NULL 값으로 채워짐
+
+  → 그럼 이걸 왜 쓸까? 왼쪽 테이블을 기준으로 데이터를 보고 싶을 때 사용된다. 예를 들어, 모든 학생들의 목록을 보면서 그 학생들이 각각 어떤 과목을 수강하는지
+                   (수강하지 않았으면 NULL) 알고 싶을 때 사용한다. 즉, 학생 정보는 빠짐없이 다 보고 싶을 때 사용된다.
+
+1)
+SELECT 조회할 컬럼
+FROM 기준테이블1
+LEFT OUTER JOIN 테이블2
+ON 조건문
+[WHERE 추가조건문]
+
+예시)
+Instructor                                                   Teaches
+ID      NAME      DEPT_NAME      SALARY                      ID      COURSE        SEMESTER      YEAR
+----------------------------------------                     -----------------------------------------
+1       James     Physics        95000                       3       CS-101        Fall          2019
+2       John      Comp.Sci.      65000                       4       PHY-312       Spring        2020
+3       Mark      Math           75000                       5       CS-203        Spring        2019
+4       Tom       Physics        90000                       6       CS-421        Fall          2020
+
+                                          Full Outer Join
+          ID      NAME      DEPT_NAME      SALARY      ID      COURSE      SEMESTER      YEAR
+          -------------------------------------------------------------------------------------
+          1       James     Physics        95000      (null)   (null)      (null)        (null)
+          2       John      Comp.Sci.      65000      (null)   (null)      (null)        (null) 
+          3       Mark      Math           75000      3        CS-101      Fall          2019
+          4       Tom       Physics        90000      4        PHY-312     Spring        2020
+
+SELECT *
+FROM instructor
+LEFT OUTER JOIN teaches 
+ON instructor.id = teaches.id
+
+  → 모든 상품 목록을 기준으로, 각 고객이 주문한 내역이 있다면 보여주고, 주문한 적이 없어도 고객 목록에는 포함시키고 싶을 때 사용된다.
