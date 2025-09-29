@@ -22,7 +22,7 @@ ID      NAME      DEPT_NAME      SALARY                      ID      COURSE     
 3       Mark      Math           75000                       5       CS-203        Spring        2019
 4       Tom       Physics        90000                       6       CS-421        Fall          2020
 
-                                          Full Outer Join
+                                          Left Outer Join
           ID      NAME      DEPT_NAME      SALARY      ID      COURSE      SEMESTER      YEAR
           -------------------------------------------------------------------------------------
           1       James     Physics        95000      (null)   (null)      (null)        (null)
