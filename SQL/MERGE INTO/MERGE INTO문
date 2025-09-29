@@ -1,0 +1,66 @@
+▶ MERGE INTO 문
+▶ 정의 : 하나의 SQL 문으로 INSERT, UPDATE, DELETE 작업을 조건에 따라 한 번에 처리하는 아주 편리한 명령어라고 할 수 있다.
+  → UPSERT (UPDATE or INSERT)라고 부르는 작업을 수행할 때 주로 사용된다.
+
+
+기본 사용)
+  → MERGE 문의 구조는 크게 MERGE INTO, USING, ON, 그리고 WHEN 절들로 이루어져 있다.
+
+MERGE INTO TABLE_NAME
+USING DUAL
+ON ( 걸어줄 조건 )
+
+WHEN MATCHED THEN
+    UPDATE SET 업데이트 할 내용 또는 DELETE 삭제할 내용
+
+WHEN NOT MATCHED THEN 
+    INSERT (테이블의 컬럼명 나열) VALUES 입력할 내용
+
+WHEN NOT MATCHED BY SOURCE THEN
+    DELETE;
+
+
+예시)
+  → 현재 판매 상품 목록(products_live) 테이블을 오늘 변경될 상품 목록(products_update)으로 업데이트 하는 상황
+
+products_live (타겟)
+product_id      product_name      price
+---------------------------------------
+101             키보드             50000
+102             마우스             30000
+
+products_update (소스)
+product_id      product_name      price
+---------------------------------------
+101             키보드 V2          55000
+103             헤드셋             80000
+
+1. 101번 키보드 : 이름과 가격이 바뀜 → UPDATE 대상
+2. 102번 마우스 : 소스에 없음 → DELETE 대상 (단종 가정)
+3. 103번 헤드셋 : 타겟에 없음 → INSERT 대상 (신상품)
+
+코드)
+MERGE INTO products_live T
+USING products_update S
+ON (T.product_id = S.product_id)
+
+-- ID 101번 : 조건 일치 → UPDATE
+WHEN MATCHED THEN
+    UPDATE SET T.product_name = S.product_name, T.price = S.price
+
+-- ID 103번 : 타겟에 없음 → INSERT
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (product_id, product_name, price)
+    VALUES (S.product_id, S.product_name, S.price)
+
+-- ID 102번 : 소스에 없음 → DELETE
+WHEN NOT MATCHED BY SOURCE THEN
+    DELETE;
+
+→ 이 쿼리를 실행하면 products_live 테이블은 INSERT, UPDATE, DELETE가 모두 반영된 최신 상태로 완벽하게 동기화됨
+
+* 실행 후 product_live 결과
+product_id      product_name      price
+---------------------------------------
+101             키보드 V2         55000
+103             헤드셋            80000
