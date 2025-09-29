@@ -1,0 +1,90 @@
+▶ CTE (Common Table Expression)란?
+▶ 정의 : 하나의 쿼리문 범위 내에서만 존재하며, 여러 번 참조될 수 있는 이름이 지정된 일회성 테이블이다.
+          CTE에는 비재귀적(Non-Recursive)과 재귀적(Recursive) 두 가지가 있다.
+  → 우리 말로는 '공통 테이블 표현식'이라고 하며, 쉽게 말해 복잡한 SELECT 쿼리에 잠시 동안 별명을 붙여서 사용하는 가상의 테이블
+    별명이 붙은 테이블은 실제 테이블처럼 저장되는 게 아니라, 오직 그 쿼리가 실행되는 동안에만 존재하다 사라진다.
+
+  → 그럼 이걸 왜 쓸까? CTE를 사용하면 여러 가지 장점이 있다.
+    1. 가독성 향상 : 길고 복잡한 쿼리를 여러 개의 논리적인 단위로 쪼갤 수 있다. 마치 긴 글을 문단으로 나누는 것처럼,
+                    쿼리의 구조를 한눈에 파악하기 쉬워져서 다른 사람이 보거나 나중에 수정할 때 편하다.
+
+    2. 재사용성 증가 : 하나의 쿼리 안에서 같은 서브쿼리를 여러 번 사용해야 할 때, CTE를 한 번만 정의해두고 필요할 때마다 별명을
+                      불러서 재사용할 수 있다. 코드가 중복되는 걸 막아준다.
+
+    3. 재귀 쿼리 가능 : CTE의 가장 강력한 기능 중 하나다. 자기 자신을 참조하는 쿼리를 만들 수 있다.
+                       이건 조직도, 부모-자식 관계, 폴더 구조 같은 계층적인 데이터를 다룰 때 정말 유용하다.
+                       일반적인 쿼리로는 구현하기 아주 까다로운 작업
+
+기본적인 형태)
+-- 'cte_별명'이라는 이름의 CTE를 정의하는 부분
+WITH cte_별명 (컬럼1, 컬럼2) AS (
+  SELECT column_a, column_b
+  FROM some_table
+  WHERE condition
+)
+-- 위에서 정의한 CTE를 실제 테이블처럼 사용하는 메인 쿼리
+SELECT *
+FROM cte_별명
+WHERE 컬럼1 = '어떤 값';
+
+
+
+▶ 비재귀적(Non-Recursive) CTE
+-- CTE 정의 부분
+WITH cte (col1, col2) AS
+(
+  SELECT 1, 2
+  UNION ALL
+  SELECT 3, 4
+)
+-- 정의된 CTE를 참조하여 사용하는 부분
+SELECT col1, col2 FROM cte;
+
+
+
+▶ 재귀적(Recursive) CTE
+-- RECURSIVE CTE
+WITH RECURSIVE cte (...) AS
+(
+  SELECT ... --Non Recursive 부분
+  UNION ALL 
+  SELECT ... --Recursive 부분
+)
+SELECT * FROM cte;
+
+▶ CTE 장점
+1. 적절하게 사용될 경우 복잡한 쿼리문에서 코드의 가독성을 높여준다.
+2. 해당 쿼리 안에서 여러 번 참조할 수 있다.
+3. 재귀 쿼리를 활용할 수 있다.
+
+
+
+예시)
+직원 테이블에서 개발팀 소속 직원들만 먼저 뽑아내고, 직원들의 연봉 정보를 연봉 테이블과 조인한다.
+
+▷ CTE 미사용 시 (서브쿼리 사용)
+SELECT
+    e.emplyee_name
+    s.salary
+FROM
+    -- 서브쿼리가 FROM 절 안에 길게 들어가서 복잡해 보임
+    (SELECT employee_id, employee_name FROM employees WHERE department = '개발팀')
+JOIN
+    salaries s ON e.employee_id = s.employee_id;
+
+
+▷ CTE 사용 시
+-- 1. 먼저 개발팀 직원만 뽑는 CTE를 정의
+WITH dev_team AS (
+    SELECT employee_id, employee_name
+    FROM employees
+    WHERE department = '개발팀'
+)
+-- 2. 메인 쿼리가 훨씬 깔끔하고 이해하기 쉬워짐
+SELECT
+    dt.employee_name,
+    s.salary
+FROM
+    dev_team dt --CTE를 이름으로 간단히 호출
+JOIN
+    salaries s ON dt.employee_id = s.employee_id;
